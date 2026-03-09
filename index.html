@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Perícia Trânsito - Fato Perícias</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }
+        .form { background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 20px; }
+        .results { background: white; padding: 30px; border-radius: 15px; display: none; }
+        .velocity-result { font-size: 3rem; font-weight: 700; text-align: center; margin: 20px 0; }
+        .status-red { color: #e74c3c; }
+        .status-green { color: #27ae60; }
+        .whatsapp-btn { background: #25d366; color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; display: inline-block; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Calculadora Perícia Trânsito</h1>
+            <p>Fato Perícias - Análise de velocidade em acidentes</p>
+        </div>
+
+        <div class="form">
+            <form id="calculatorForm">
+                <div class="form-group">
+                    <label>Modelo do Veículo:</label>
+                    <select id="vehicle" required>
+                        <option value="">Selecione...</option>
+                        <option value="ford_fiesta">Ford Fiesta (1098kg)</option>
+                        <option value="ford_ka">Ford Ka (950kg)</option>
+                        <option value="chevrolet_onix">Chevrolet Onix (1020kg)</option>
+                        <option value="volkswagen_gol">Volkswagen Gol (980kg)</option>
+                        <option value="honda_civic">Honda Civic (1350kg)</option>
+                        <option value="toyota_corolla">Toyota Corolla (1380kg)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Condição da Via:</label>
+                    <select id="roadCondition" required>
+                        <option value="">Selecione...</option>
+                        <option value="0.8">Asfalto Seco - Boa</option>
+                        <option value="0.7">Asfalto Seco - Regular</option>
+                        <option value="0.5">Asfalto Molhado - Boa</option>
+                        <option value="0.4">Asfalto Molhado - Regular</option>
+                        <option value="0.6">Paralelepípedo Seco</option>
+                        <option value="0.3">Paralelepípedo Molhado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Distância de Frenagem (metros):</label>
+                    <input type="number" id="distance" step="0.1" required placeholder="Ex: 15.5">
+                </div>
+
+                <div class="form-group">
+                    <label>Velocidade Permitida (km/h):</label>
+                    <input type="number" id="speedLimit" placeholder="60" value="60">
+                </div>
+
+                <button type="submit">CALCULAR VELOCIDADE</button>
+            </form>
+        </div>
+
+        <div id="results" class="results">
+            <h3>Resultado da Análise</h3>
+            <div id="velocityDisplay" class="velocity-result">-- km/h</div>
+            <p id="analysisText" style="text-align: center; font-size: 1.2rem; margin: 20px 0;"></p>
+            <p id="recommendationText" style="background: #f8f9fa; padding: 20px; border-radius: 10px;"></p>
+            <a href="https://wa.me/5511969765223?text=Olá! Realizei uma análise na calculadora de perícia e gostaria de solicitar um orçamento." target="_blank" class="whatsapp-btn">📱 Solicitar Perícia</a>
+        </div>
+    </div>
+
+    <script>
+        const vehicles = {
+            'ford_fiesta': 1098, 'ford_ka': 950, 'chevrolet_onix': 1020,
+            'volkswagen_gol': 980, 'honda_civic': 1350, 'toyota_corolla': 1380
+        };
+
+        document.getElementById('calculatorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const vehicle = document.getElementById('vehicle').value;
+            const roadCondition = parseFloat(document.getElementById('roadCondition').value);
+            const distance = parseFloat(document.getElementById('distance').value);
+            const speedLimit = parseFloat(document.getElementById('speedLimit').value) || 60;
+
+            if (!vehicle || !roadCondition || !distance) {
+                alert('Preencha todos os campos obrigatórios');
+                return;
+            }
+
+            // Cálculo físico: v² = 2 * a * s, onde a = μ * g
+            const mu = roadCondition;
+            const g = 9.81;
+            const deceleration = mu * g;
+            const velocityMs = Math.sqrt(2 * deceleration * distance);
+            const velocityKmh = velocityMs * 3.6;
+
+            const isExcess = velocityKmh > speedLimit;
+            const difference = velocityKmh - speedLimit;
+
+            document.getElementById('velocityDisplay').textContent = Math.round(velocityKmh * 100) / 100 + ' km/h';
+            document.getElementById('velocityDisplay').className = 'velocity-result status-' + (isExcess ? 'red' : 'green');
+            
+            document.getElementById('analysisText').innerHTML = 
+                '<strong>' + (isExcess ? 'SUSPEITA DE EXCESSO' : 'DENTRO DO LIMITE') + '</strong><br>' +
+                'Velocidade: ' + Math.round(velocityKmh * 100) / 100 + ' km/h | Limite: ' + speedLimit + ' km/h | Diferença: ' + 
+                (difference > 0 ? '+' : '') + Math.round(difference * 100) / 100 + ' km/h';
+            
+            document.getElementById('recommendationText').textContent = isExcess ? 
+                'Recomendamos perícia técnica especializada para análise detalhada.' :
+                'Preliminarmente dentro do limite, mas perícia sempre recomendada para casos oficiais.';
+            
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
